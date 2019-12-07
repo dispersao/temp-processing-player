@@ -8,6 +8,10 @@ class Sequence {
   int willEndAt;
   String playingString;
   
+  int pausedAt;
+  int pausedTime = 0;
+  
+  
   Sequence(String scn, int _id, int dur) {
     id = _id;
     sceneNumber = scn;
@@ -16,20 +20,36 @@ class Sequence {
   }
   
   void play(){
+    if(pausedAt > 0){
+      pausedTime = timeInSeconds() - pausedAt;
+    } else {
+      startedAt = timeInSeconds();
+    }
     isPlaying = true;
-    startedAt = timeInSeconds();
-    willEndAt = startedAt + duration;
+    
+    willEndAt = startedAt + duration + pausedTime;
     playingString = sceneNumber+ "("+duration+" sec) \n started:"+startedAt+"\n will end:"+willEndAt;
     println(playingString);
   }
+  
+  void pause(){
+    isPlaying = false;
+    pausedAt = timeInSeconds();
+  }
     
   boolean isPassedHalf(){
-    int passedTime = timeInSeconds() - parseInt(startedAt);
-    return (passedTime > duration /2);
+    return this.progress() >= 50;
   }
   
   boolean hasEnded(){
-    return timeInSeconds() >= willEndAt;
+    return this.progress() >= 100;
+  }
+  
+  int progress() {
+    int passedTime = timeInSeconds() - parseInt(startedAt);
+    println("progress:"+  round((passedTime *100)/ duration));
+    return round((passedTime *100)/ duration);
+
   }
   
   void end(){

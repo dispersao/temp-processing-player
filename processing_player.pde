@@ -94,6 +94,16 @@ void playPauseSequence(int script, int seqid, boolean play){
   oscP5.send(myMessage, myBroadcastLocation);
 }
 
+void progressSequence(int script, int seqId, int seqIndex, int progress) {
+  OscMessage myMessage = new OscMessage("/sceneProgress");
+  myMessage.add(script);
+  myMessage.add(seqId);
+  myMessage.add(seqIndex);
+  myMessage.add(progress);
+  
+  oscP5.send(myMessage, myBroadcastLocation);
+}
+
 int timeInSeconds(){
   return floor(time / 1000);
 }
@@ -112,6 +122,10 @@ void oscEvent(OscMessage theOscMessage) {
   switch(theOscMessage.addrPattern()){
     case "/start":
       script.start();
+    break;
+    
+    case "/pause":
+      script.pause();
     break;
     
     case "/scene":

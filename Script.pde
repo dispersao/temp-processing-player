@@ -3,6 +3,9 @@ class Script {
   boolean isPlaying;
   Sequence[] sequences = new Sequence[120];
   Sequence playing = null;
+  int lastProgressSent = -1;
+  boolean paused = false;
+  int pausedTime = 0;
   
   Script(Integer _id){
     println(_id);
@@ -40,14 +43,21 @@ class Script {
   }
   
   void play(Sequence s){
-    playPauseSequence(id, s.id, true);
-    playing = s;
-    s.play();
+    //playPauseSequence(id, s.id, true);
+    if(s!=null){
+      playing = s;
+      s.play();
+    }
   }
   
   String checkForSequence(){
     String resume = "";
     if(playing != null) {
+      int currentProgress = playing.progress();
+      if (currentProgress != lastProgressSent) {
+        progressSequence(id, playing.id, playing.index, currentProgress);
+        lastProgressSent = currentProgress;
+      }
       resume = playing.playingString;
       if(playing.isPassedHalf() && sequences[playing.index + 1] == null){
         println("passed half");
@@ -55,11 +65,20 @@ class Script {
         fetchNextSequence(id, playing);
       } 
       if(playing.hasEnded()){
+        lastProgressSent = -1;
         playing.end();
         play(sequences[playing.index +1]);
       }
     }
     return resume;
+  }
+  
+  void pause(){
+    if (playing!= null) {
+      playing.pause();
+      this.paused = true;
+      this.pausedTime = timeInSeconds();
+    }
   }
   
   void stop(){
