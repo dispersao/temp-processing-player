@@ -21,7 +21,8 @@ class Sequence {
   
   void play(){
     if(pausedAt > 0){
-      pausedTime = timeInSeconds() - pausedAt;
+      pausedTime += (timeInSeconds() - pausedAt);
+      pausedAt = 0;
     } else {
       startedAt = timeInSeconds();
     }
@@ -35,6 +36,7 @@ class Sequence {
   void pause(){
     isPlaying = false;
     pausedAt = timeInSeconds();
+    playingString = sceneNumber+ "("+duration+" sec) \n paused at:"+pausedAt;
   }
     
   boolean isPassedHalf(){
@@ -46,8 +48,9 @@ class Sequence {
   }
   
   int progress() {
-    int passedTime = timeInSeconds() - parseInt(startedAt);
-    println("progress:"+  round((passedTime *100)/ duration));
+    int passedTime = timeInSeconds() - parseInt(startedAt) - pausedTime;
+    println("passedTime " + passedTime+ "//"+parseInt(startedAt)+"//"+pausedTime);
+    //println("progress:"+  round((passedTime *100)/ duration));
     return round((passedTime *100)/ duration);
 
   }
