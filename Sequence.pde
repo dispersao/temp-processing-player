@@ -28,7 +28,7 @@ class Sequence {
     }
     isPlaying = true;
     
-    willEndAt = startedAt + duration + pausedTime;
+    willEndAt = startedAt + duration() + pausedTime;
     playingString = sceneNumber+ "("+duration+" sec) \n started:"+startedAt+"\n will end:"+willEndAt;
     println(playingString);
   }
@@ -49,9 +49,7 @@ class Sequence {
   
   int progress() {
     int passedTime = timeInSeconds() - parseInt(startedAt) - pausedTime;
-    println("passedTime " + passedTime+ "//"+parseInt(startedAt)+"//"+pausedTime);
-    //println("progress:"+  round((passedTime *100)/ duration));
-    return round((passedTime *100)/ duration);
+    return round((passedTime *100)/ duration());
 
   }
   
@@ -59,5 +57,9 @@ class Sequence {
     isPlaying = false;
     playingString = "ended " + sceneNumber+ "("+duration+" sec)";
 
+  }
+  
+  int duration() {
+    return round(duration/speed());
   }
 }

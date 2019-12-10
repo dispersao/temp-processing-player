@@ -11,6 +11,8 @@ import netP5.*;
 int time;
 boolean connected = false;
 
+int speedCoeficient = 1;
+
 Script script = null;
 
 OscP5 oscP5;
@@ -108,6 +110,10 @@ int timeInSeconds(){
   return floor(time / 1000);
 }
 
+int speed(){
+  return speedCoeficient;
+}
+
 /* incoming osc message are forwarded to the oscEvent method. */
 void oscEvent(OscMessage theOscMessage) {
    /* parse theOscMessage and extract the values from the osc message arguments. */
@@ -119,9 +125,15 @@ void oscEvent(OscMessage theOscMessage) {
   println("### received an osc message with addrpattern "+theOscMessage.addrPattern()+" and typetag "+theOscMessage.typetag());
   theOscMessage.print();
   
+  int scriptId;
+  
   switch(theOscMessage.addrPattern()){
     case "/start":
-      script.start();
+      scriptId = parseInt(firstValue);
+      speedCoeficient = parseInt(theOscMessage.get(1).floatValue());
+      if (scriptId == script.id){
+        script.start();
+      }
     break;
     
     case "/pause":
@@ -143,7 +155,7 @@ void oscEvent(OscMessage theOscMessage) {
     
     case "/connect":
       println(firstValue);
-      int scriptId = parseInt(firstValue);
+      scriptId = parseInt(firstValue);
       if (script == null || script.id != scriptId) {
         if(script != null) {
           script.stop();
