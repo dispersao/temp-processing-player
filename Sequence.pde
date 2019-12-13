@@ -30,7 +30,6 @@ class Sequence {
     
     willEndAt = startedAt + duration() + pausedTime;
     playingString = sceneNumber+ "("+duration+" sec) \n started:"+startedAt+"\n will end:"+willEndAt;
-    println(playingString);
   }
   
   void pause(){

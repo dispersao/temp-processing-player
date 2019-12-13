@@ -116,12 +116,9 @@ int speed(){
 
 /* incoming osc message are forwarded to the oscEvent method. */
 void oscEvent(OscMessage theOscMessage) {
-   /* parse theOscMessage and extract the values from the osc message arguments. */
-      float firstValue = theOscMessage.get(0).floatValue();  
-      
-      print("### received an osc message /test with typetag ifs.");
-      println(" values: "+firstValue);  /* get and print the address pattern and the typetag of the received OscMessage */
-
+  /* parse theOscMessage and extract the values from the osc message arguments. */
+  float firstValue = theOscMessage.get(0).floatValue();
+  print("### received an osc message /test with typetag ifs.");
   println("### received an osc message with addrpattern "+theOscMessage.addrPattern()+" and typetag "+theOscMessage.typetag());
   theOscMessage.print();
   
@@ -154,11 +151,10 @@ void oscEvent(OscMessage theOscMessage) {
     break;
     
     case "/connect":
-      println(firstValue);
       scriptId = parseInt(firstValue);
       if (script == null || script.id != scriptId) {
         if(script != null) {
-          script.stop();
+          script.end();
         }
          script = new Script(scriptId);
       }

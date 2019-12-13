@@ -7,7 +7,6 @@ class Script {
   int pausedTime = 0;
   
   Script(Integer _id){
-    println(_id);
     id = _id;
   }
   
@@ -36,8 +35,6 @@ class Script {
   void addScene(int sceneId, String sceneNumber, int duration, int index) {
     Sequence s = new Sequence(sceneNumber, sceneId, duration);
     s.index = index;
-    println(sequences.length);
-
     sequences[index] = s;
     
     Sequence splaying = getSequencePlaying();
@@ -47,7 +44,6 @@ class Script {
   }
   
   void play(Sequence s){
-    //playPauseSequence(id, s.id, true);
     if(s!=null){
       isPlaying = true;
       playing = s;
@@ -66,14 +62,15 @@ class Script {
         }
         resume = playing.playingString;
         if(playing.isPassedHalf() && sequences[playing.index + 1] == null){
-          println("passed half");
           resume += "\n passed half";
           fetchNextSequence(id, playing);
         } 
         if(playing.hasEnded()){
           lastProgressSent = -1;
           playing.end();
-          play(sequences[playing.index +1]);
+          int nextIndex = playing.index +1;
+          playing = null;
+          play(sequences[nextIndex]);
         }
       } else {
         resume = "paused " + playing.playingString;
@@ -92,6 +89,13 @@ class Script {
   void stop(){
     if(playing != null) {
       playing.end();
+      println(playing.isPlaying);
+      playing = null;
     }
+  }
+  
+  void end(){
+    this.stop();
+    sequences = new Sequence[120];
   }
 }
