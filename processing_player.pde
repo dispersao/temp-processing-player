@@ -42,9 +42,20 @@ void draw() {
   background(0);
   time = millis();
   String scene = "";
+  String token ="";
+  String finished ="";
+  
   if(script != null){
      scene = script.checkForSequence();
+     if (script.token!= "" && script.state == "started") {
+       token = script.token;
+     }
+     if(script.state == "finished") {
+       finished = "that's all for today folks!";
+     }
   }
+  
+  
   
   if(connected){
     textSize(20);
@@ -57,10 +68,26 @@ void draw() {
 
   text(timeInSeconds(), 10, 60); 
   
-  textSize(20);
-  fill(255, 255, 255);
+  if(scene!= "") {
+    textSize(20);
+    fill(255, 255, 255);
+  
+    text(scene, 10, 100); 
+  }
+  
+  if (token != "") {
+    
+    textSize(20);
+    fill(155, 155, 155);
+  
+    text(token, 10, 150);
+  } else if (finished!= "") {
+    textSize(20);
+    fill(155, 155, 155);
+    text(finished, 10, 150);
 
-  text(scene, 10, 100); 
+  }
+  
 }
 
 void fetchNextSequence(int script, Sequence s) {
@@ -125,7 +152,35 @@ void oscEvent(OscMessage theOscMessage) {
   int scriptId;
   
   switch(theOscMessage.addrPattern()){
-    case "/start":
+    
+     case "/connect":
+      scriptId = parseInt(firstValue);
+      if (script == null || script.id != scriptId) {
+        if(script != null) {
+          script.end();
+        }
+         script = new Script(scriptId);
+      }
+ 
+      connected = true;
+      OscMessage myMessage = new OscMessage("/connected");
+      oscP5.send(myMessage, myBroadcastLocation); 
+    break;
+    
+    case "/session":
+    if (script != null){
+      String scriptToken = theOscMessage.get(1).stringValue();
+      script.startSession(scriptToken   );
+    }
+    break;
+    
+    case "/resetsession":
+      if (script != null){
+        script.reset();
+      }
+    break;
+    
+    case "/play":
       scriptId = parseInt(firstValue);
       speedCoeficient = parseInt(theOscMessage.get(1).floatValue());
       if (scriptId == script.id){
@@ -135,6 +190,12 @@ void oscEvent(OscMessage theOscMessage) {
     
     case "/pause":
       script.pause();
+    break;
+    
+    case "/finish":
+      if(script!=null) {
+        script.end();
+      }
     break;
     
     case "/scene":
@@ -150,18 +211,6 @@ void oscEvent(OscMessage theOscMessage) {
       script.addScene(parseInt(sceneId), sceneNumber, parseInt(duration), parseInt(index));
     break;
     
-    case "/connect":
-      scriptId = parseInt(firstValue);
-      if (script == null || script.id != scriptId) {
-        if(script != null) {
-          script.end();
-        }
-         script = new Script(scriptId);
-      }
- 
-      connected = true;
-      OscMessage myMessage = new OscMessage("/connected");
-      oscP5.send(myMessage, myBroadcastLocation); 
-    break;
+   
   }
 }

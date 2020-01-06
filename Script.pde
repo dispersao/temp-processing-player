@@ -5,9 +5,17 @@ class Script {
   Sequence playing = null;
   int lastProgressSent = -1;
   int pausedTime = 0;
+  String token;
+  String state = "idle";
   
   Script(Integer _id){
     id = _id;
+  }
+  
+  
+  void startSession(String _token){
+    token = _token;
+    state = "started";
   }
   
   void start (){
@@ -17,8 +25,8 @@ class Script {
     } else {
       play(playing);
     }
-    
   }
+  
   
   Sequence getSequencePlaying(){
     Sequence playings = null;
@@ -45,6 +53,7 @@ class Script {
   
   void play(Sequence s){
     if(s!=null){
+      state = "playing";
       isPlaying = true;
       playing = s;
       s.play();
@@ -83,6 +92,7 @@ class Script {
     if (playing!= null) {
       playing.pause();
       isPlaying = false;
+      state = "paused";
     }
   }
   
@@ -91,11 +101,19 @@ class Script {
       playing.end();
       println(playing.isPlaying);
       playing = null;
+      state = "paused";
     }
   }
   
   void end(){
     this.stop();
     sequences = new Sequence[120];
+    state = "finished";
+  }
+  
+  void reset(){
+    this.end();
+    state = "idle";
+    token = "";
   }
 }
