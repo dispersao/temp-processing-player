@@ -67,9 +67,12 @@ class Script {
     if(playing != null){
       if(isPlaying) {
         int currentProgress = playing.progress();
-        if (currentProgress != lastProgressSent) {
-          progressSequence(id, playing.id, playing.index, currentProgress);
-          lastProgressSent = currentProgress;
+        if (currentProgress > lastProgressSent) {
+          int nextProgress = getNextViableProgress();
+          if (currentProgress >= nextProgress) {
+            progressSequence(id, playing.id, playing.index, nextProgress);
+            lastProgressSent = nextProgress;
+          }
         }
         resume = playing.playingString;
         resume += "\n"+ playing.elapsedMiliseconds();
@@ -100,6 +103,19 @@ class Script {
       isPlaying = false;
       state = "paused";
     }
+  }
+  
+  int getNextViableProgress () {
+    int[] progressSteps = { 1, 25, 50, 75, 100 };
+    int indexOfLasProgress = -1;
+    for(int i =0; i< progressSteps.length; i++) {
+      if (lastProgressSent == progressSteps[i]){
+        indexOfLasProgress = i;
+        break;
+      }
+    }
+    
+    return progressSteps[indexOfLasProgress +1];
   }
   
   void stop(){
