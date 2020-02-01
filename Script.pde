@@ -8,6 +8,8 @@ class Script {
   String token;
   String state = "idle";
   
+  int minimalTimePlanned = 80 * 1000 * 1000;
+  
   Script(Integer _id){
     id = _id;
   }
@@ -20,7 +22,7 @@ class Script {
   
   void start (){
     if (playing == null) {
-      Sequence n = getSequencePlaying();
+      Sequence n = getSequencePlaying(); 
       fetchNextSequence(id, n);
     } else {
       play(playing);
@@ -70,14 +72,18 @@ class Script {
           lastProgressSent = currentProgress;
         }
         resume = playing.playingString;
-        if(playing.isPassedHalf() && sequences[playing.index + 1] == null){
+        resume += "\n"+ playing.elapsedMiliseconds();
+        int nextIndex = playing.index + 1;
+        if(playing.isPassedHalf() ){
           resume += "\n passed half";
-          fetchNextSequence(id, playing);
-        } 
+        }
+        if(playing.duration() - playing.elapsedMiliseconds() < minimalTimePlanned/speed() && sequences[nextIndex] == null && lastRequestedIndex != nextIndex) {
+           fetchNextSequence(id, playing);
+        }
         if(playing.hasEnded()){
           lastProgressSent = -1;
           playing.end();
-          int nextIndex = playing.index +1;
+          //int nextIndex = playing.index +1;
           playing = null;
           play(sequences[nextIndex]);
         }

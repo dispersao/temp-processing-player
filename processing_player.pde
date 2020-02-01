@@ -7,6 +7,7 @@
 
 import oscP5.*;
 import netP5.*;
+int lastRequestedIndex;
 
 int time;
 boolean connected = false;
@@ -98,6 +99,7 @@ void fetchNextSequence(int script, Sequence s) {
   if (s!= null){
     nextScene = s.index + 1;
   }
+  lastRequestedIndex = nextScene;
   myMessage.add(script);
   
   myMessage.add(nextScene); /* add an int array to the osc message */
@@ -107,17 +109,16 @@ void fetchNextSequence(int script, Sequence s) {
   oscP5.send(myMessage, myBroadcastLocation); 
 }
 
-void playPauseSequence(int script, int seqid, boolean play){
-  String addre = "/pauseScene";
-  if (play){
-    addre = "/playScene";
-  }
-  OscMessage myMessage = new OscMessage(addre);
+void sceneState(int seqid, int seqIndex, String state, int prog){
+  println("sceneState");
   
-  myMessage.add(script);
-  
+  OscMessage myMessage = new OscMessage("/updateScene");
+  myMessage.add(script.id);
   myMessage.add(seqid); /* add an int array to the osc message */
-  
+  myMessage.add(seqIndex);
+  myMessage.add(state); /* add an int array to the osc message */
+  myMessage.add(prog);
+
   println(myMessage);
   /* send the message */
   oscP5.send(myMessage, myBroadcastLocation);
@@ -134,7 +135,11 @@ void progressSequence(int script, int seqId, int seqIndex, int progress) {
 }
 
 int timeInSeconds(){
-  return floor(time / 1000);
+  return round(time / 1000);
+}
+
+int timeInMiliseconds(){
+  return time;
 }
 
 int speed(){
@@ -163,7 +168,12 @@ void oscEvent(OscMessage theOscMessage) {
       }
  
       connected = true;
+      //OscBundle myBundle = new OscBundle();
+      
       OscMessage myMessage = new OscMessage("/connected");
+       //myBundle.add(myMessage);
+       //myBundle.setTimetag(OscBundle.now());
+       //oscP5.send(myBundle, myBroadcastLocation);
       oscP5.send(myMessage, myBroadcastLocation); 
     break;
     
@@ -183,6 +193,7 @@ void oscEvent(OscMessage theOscMessage) {
     case "/play":
       scriptId = parseInt(firstValue);
       speedCoeficient = parseInt(theOscMessage.get(1).floatValue());
+      println(scriptId+ " "+script.id);
       if (scriptId == script.id){
         script.start();
       }
