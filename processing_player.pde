@@ -49,7 +49,8 @@ void setup() {
    */
 
   /* the address of the osc broadcast server */
-  myBroadcastLocation = new NetAddress("127.0.0.1",7400);
+  /* we send it to ourselves as server, since we're only using OSC to translate OSC messsages */
+  myBroadcastLocation = new NetAddress("127.0.0.1",7500);
 }
 
 
