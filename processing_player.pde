@@ -1,3 +1,10 @@
+import processing.video.*;
+
+
+//this will be useful to find out the number of monitors connected to the computer
+import java.awt.GraphicsEnvironment;
+import java.awt.GraphicsDevice;
+
 /**
  * oscP5broadcastClient by andreas schlegel
  * an osc broadcast client.
@@ -18,6 +25,9 @@ import netP5.*;
 import websockets.*;
 WebsocketServer ws;
 
+
+
+
 int lastRequestedIndex;
 
 int time;
@@ -32,9 +42,32 @@ OscP5 oscP5;
 /* a NetAddress contains the ip address and port number of a remote location in the network. */
 NetAddress myBroadcastLocation;
 
+GraphicsDevice[] displayDevices;
+
+boolean dualMonitor;
+Movie movie;
+String sequencesFolder =  "sequences/";
+String movieFileName = "001.mov";
+
+void settings() {
+    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+    displayDevices = ge.getScreenDevices();
+    
+    
+    // the idea here is that when we have the dual monitor, the theater screen will be on the right.
+    // other wise we will show it in a small window
+    
+    if  (displayDevices.length > 1) {
+      fullScreen(2);
+      dualMonitor = true;
+    } else {
+      dualMonitor = false;
+      size (1100,450);
+    }
+}
+
 void setup() {
-  size(400,400);
-  frameRate(10);
+  frameRate(24);
 
   //WebSocket
   ws = new WebsocketServer(this, 8081, "");
@@ -51,11 +84,23 @@ void setup() {
   /* the address of the osc broadcast server */
   /* we send it to ourselves as server, since we're only using OSC to translate OSC messsages */
   myBroadcastLocation = new NetAddress("127.0.0.1",7500);
+  
+  movie = new Movie(this, sequencesFolder + movieFileName);
+  
+}
+
+void movieEvent(Movie m) {
+  m.read();
 }
 
 
 void draw() {
-  background(0);
+  //background(0);
+  image(movie, 300, 0, 800, 450);
+  
+  fill(80, 80, 80);
+  
+  rect(0,0,300,450);
   time = millis();
   String scene = "";
   String token ="";
@@ -84,12 +129,6 @@ void draw() {
 
   text(timeInSeconds(), 10, 60);
 
-  if(scene!= "") {
-    textSize(20);
-    fill(255, 255, 255);
-
-    text(scene, 10, 100);
-  }
 
   if (token != "") {
 
@@ -103,6 +142,33 @@ void draw() {
     text(finished, 10, 150);
 
   }
+
+  if(scene!= "") {
+    textSize(20);
+    fill(255, 255, 255);
+
+    text(scene, 10, 100);
+    println("screne: "+scene);  
+    println("" );  
+    
+    String currentSequenceFileName = sequencesFolder+ formatFileName(script.getSequencePlaying().sceneNumber)+".mov";
+
+    if (!currentSequenceFileName.equals(movieFileName)) {
+      movie = new Movie (this, currentSequenceFileName);
+      movie.play();
+      println ("changing movie: "+currentSequenceFileName+" " +movieFileName);
+      movieFileName = currentSequenceFileName;
+    }
+    
+  
+    //if (!dualMonitor) {
+    //  image(movie, 300, 0, 800, 450);
+    //  println ("dual monitor: "+currentSequenceFileName);
+    //  } else { //TO DO: write the dual monitor movie render
+    //}
+    
+  }
+
 
 }
 
@@ -197,6 +263,7 @@ void oscEvent(OscMessage theOscMessage) {
     case "/session":
     if (script != null){
       String scriptToken = theOscMessage.get(1).stringValue();
+      println ("received session message, token "+scriptToken);
       script.startSession(scriptToken   );
     }
     break;
@@ -255,6 +322,7 @@ void webSocketServerEvent(byte[] buf, int offset, int length){
 }
 
 //String data received from WebSocket Client
+// in theory we should never get string messages in this particular application
 void webSocketServerEvent(String msg){
   println(msg);
   //JSONObject json = parseJSONObject(msg);
@@ -265,4 +333,21 @@ void webSocketServerEvent(String msg){
   //   println(species);
   // }
 
+}
+
+String formatFileName(String sceneString) {
+  String formattedFileName = "";
+  String numbersOnly =  "";
+  String lettersOnly =  "";
+  for (int i=0; i<sceneString.length(); i++){
+    if (sceneString.charAt(i)>='0' && sceneString.charAt(i)<='9') {
+      numbersOnly = numbersOnly + sceneString.charAt(i);
+    } else {
+      lettersOnly = lettersOnly + sceneString.charAt(i);
+    }
+  }
+  formattedFileName = nf(Integer.valueOf(numbersOnly), 3);
+  formattedFileName = formattedFileName + lettersOnly;
+  
+  return formattedFileName; 
 }
