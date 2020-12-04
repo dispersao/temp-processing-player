@@ -8,6 +8,8 @@ class Script {
   String token;
   String state = "idle";
   
+  Clip clip;
+  
   int minimalTimePlanned = 80 * 1000 * 1000;
   
   Script(Integer _id){
@@ -55,10 +57,14 @@ class Script {
   
   void play(Sequence s){
     if(s!=null){
+      if( this.clip == null || this.clip.sequence != s){
+        this.clip = new Clip(s);
+      }
       state = "playing";
       isPlaying = true;
       playing = s;
       s.play();
+      this.clip.play();
     }
   }
   
@@ -102,6 +108,7 @@ class Script {
       playing.pause();
       isPlaying = false;
       state = "paused";
+      this.clip.pause();
     }
   }
   
@@ -131,11 +138,27 @@ class Script {
     this.stop();
     sequences = new Sequence[120];
     state = "finished";
+    if(this.clip != null){
+      this.clip.stop();
+    }
+    this.clip = null;
   }
   
   void reset(){
     this.end();
     state = "idle";
     token = "";
+     if(this.clip != null){
+      this.clip.stop();
+    }
+    this.clip = null;
+  }
+  
+    Movie getMovie(){
+      if(this.clip != null){
+        return this.clip.movie;
+    } else {
+      return null;
+    }
   }
 }
