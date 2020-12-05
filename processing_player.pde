@@ -1,10 +1,7 @@
 
-
 //this will be useful to find out the number of monitors connected to the computer
 import java.awt.GraphicsEnvironment;
 import java.awt.GraphicsDevice;
-
-
 
 /**
  * oscP5broadcastClient by andreas schlegel
@@ -82,14 +79,11 @@ void setup() {
   /* the address of the osc broadcast server */
   /* we send it to ourselves as server, since we're only using OSC to translate OSC messsages */
   myBroadcastLocation = new NetAddress("127.0.0.1",7500);
-  
-  
 }
 
 void movieEvent(Movie m) {
   m.read();
 }
-
 
 void draw() {
   //background(0);
@@ -100,7 +94,6 @@ void draw() {
       image(scriptMovie, 300, 0, 800, 450);
     }
   }
-  
   
   fill(80, 80, 80);
   
@@ -120,8 +113,6 @@ void draw() {
      }
   }
 
-
-
   if(connected){
     textSize(20);
     fill(155, 255, 180);
@@ -135,16 +126,13 @@ void draw() {
 
 
   if (token != "") {
-
     textSize(20);
     fill(155, 155, 155);
-
     text(token, 10, 150);
   } else if (finished!= "") {
     textSize(20);
     fill(155, 155, 155);
     text(finished, 10, 150);
-
   }
 
   if(scene!= "") {
@@ -152,31 +140,7 @@ void draw() {
     fill(255, 255, 255);
 
     text(scene, 10, 100);
-    //println("screne: "+scene);  
-    //println("" );  
-    
-    if(script.getSequencePlaying() != null){
-      
-      /*String currentSequenceFileName = sequencesFolder+ formatFileName(script.getSequencePlaying().sceneNumber)+".mov";
-  
-      if (!currentSequenceFileName.equals(movieFileName)) {
-        movie = new Movie (this, currentSequenceFileName);
-        movie.play();
-        println ("changing movie: "+currentSequenceFileName+" " +movieFileName);
-        movieFileName = currentSequenceFileName;
-      }*/
-    }
-      
-  
-    //if (!dualMonitor) {
-    //  image(movie, 300, 0, 800, 450);
-    //  println ("dual monitor: "+currentSequenceFileName);
-    //  } else { //TO DO: write the dual monitor movie render
-    //}
-    
   }
-
-
 }
 
 void fetchNextSequence(int script, Sequence s) {
