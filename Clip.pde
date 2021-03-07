@@ -15,6 +15,7 @@ class Clip {
   
   void play() {
     this.movie.play();
+    this.movie.speed(speed());
   }
   
   void pause() {

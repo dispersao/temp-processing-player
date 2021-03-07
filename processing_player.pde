@@ -2,6 +2,8 @@
 //this will be useful to find out the number of monitors connected to the computer
 import java.awt.GraphicsEnvironment;
 import java.awt.GraphicsDevice;
+  
+import java.util.Map;
 
 /**
  * oscP5broadcastClient by andreas schlegel
@@ -25,6 +27,7 @@ WebsocketServer ws;
 
 PApplet applet = this;
 
+HashMap<Integer,Boolean> pendingIndexes = new HashMap<Integer,Boolean>();
 
 int lastRequestedIndex;
 
@@ -152,6 +155,8 @@ void fetchNextSequence(int script, Sequence s) {
     nextScene = s.index + 1;
   }
   lastRequestedIndex = nextScene;
+  pendingIndexes.put(nextScene, true);
+  println("requesting scene for index " + nextScene);
   myMessage.add(script);
 
   myMessage.add(nextScene); /* add an int array to the osc message */
@@ -198,12 +203,16 @@ int speed(){
   return speedCoeficient;
 }
 
+boolean waitingFor(int id) {
+  return pendingIndexes.get(id) != null && pendingIndexes.get(id) == true;
+}
+
 /* incoming osc message are forwarded to the oscEvent method. */
 void oscEvent(OscMessage theOscMessage) {
   /* parse theOscMessage and extract the values from the osc message arguments. */
   float firstValue;
-  print("### received an osc message /test with typetag ifs.");
-  println("### received an osc message with addrpattern "+theOscMessage.addrPattern()+" and typetag "+theOscMessage.typetag());
+  //print("### received an osc message /test with typetag ifs.");
+  //println("### received an osc message with addrpattern "+theOscMessage.addrPattern()+" and typetag "+theOscMessage.typetag());
   theOscMessage.print();
 
   int scriptId;
@@ -235,7 +244,7 @@ void oscEvent(OscMessage theOscMessage) {
     if (script != null){
       String scriptToken = theOscMessage.get(1).stringValue();
       println ("received session message, token "+scriptToken);
-      script.startSession(scriptToken   );
+      script.startSession(scriptToken);
     }
     break;
 
@@ -274,6 +283,7 @@ void oscEvent(OscMessage theOscMessage) {
       println("index:"+index);
       float duration = theOscMessage.get(4).floatValue();
       println("duration:"+duration);
+      pendingIndexes.put(parseInt(index), false);
 
       script.addScene(parseInt(sceneId), sceneNumber, parseInt(duration), parseInt(index));
     break;

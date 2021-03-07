@@ -10,10 +10,14 @@ class Script {
   
   Clip clip;
   
-  int minimalTimePlanned = 80 * 1000 * 1000;
+  int minimalTimePlanned = 10 * 1000;
   
   Script(Integer _id){
     id = _id;
+  }
+  
+  int maxGapUnplanned() {
+    return minimalTimePlanned / speed();
   }
   
   
@@ -86,9 +90,8 @@ class Script {
         if(playing.isPassedHalf() ){
           resume += "\n passed half";
         }
-        if(playing.duration() - playing.elapsedMiliseconds() < minimalTimePlanned/speed() && sequences[nextIndex] == null && lastRequestedIndex != nextIndex) {
-           fetchNextSequence(id, playing);
-        }
+        this.shouldFetchSequence();
+        
         if(playing.hasEnded()){
           lastProgressSent = -1;
           playing.end();
@@ -96,11 +99,32 @@ class Script {
           playing = null;
           play(sequences[nextIndex]);
         }
+        
+        if (sequences[nextIndex] != null){
+          resume += "\n\n next scene " + sequences[nextIndex].sceneNumber;
+        }
       } else {
         resume = "paused " + playing.playingString;
       }
     }
     return resume;
+  }
+  
+  void shouldFetchSequence(){
+    int remainingTime = this.playing.remainingMiliseconds();
+    
+    Sequence lastFetchedSequence = playing;
+    for(int i = playing.index + 1; i < sequences.length; i++){
+      if(sequences[i] != null){
+        lastFetchedSequence = sequences[i];
+        remainingTime += lastFetchedSequence.duration();
+      }
+    }
+    
+    if(remainingTime < maxGapUnplanned() && !waitingFor(lastFetchedSequence.index + 1)){
+      println("remainingTime: "+remainingTime+ " maxGapUnplanned: " +maxGapUnplanned()+ " lastRequestedIndex: "+ lastRequestedIndex);
+      fetchNextSequence(id, lastFetchedSequence);
+    }
   }
   
   void pause(){
@@ -155,7 +179,7 @@ class Script {
   }
   
     Movie getMovie(){
-      if(this.clip != null){
+      if(this.clip != null && this.clip.movie != null){
         return this.clip.movie;
     } else {
       return null;
