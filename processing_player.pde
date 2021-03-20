@@ -40,6 +40,8 @@ Script script = null;
 
 OscP5 oscP5;
 
+boolean videoInFullscreen = true;
+
 /* a NetAddress contains the ip address and port number of a remote location in the network. */
 NetAddress myBroadcastLocation;
 
@@ -50,12 +52,10 @@ boolean dualMonitor;
 void settings() {
     GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
     displayDevices = ge.getScreenDevices();
-    
-    
     // the idea here is that when we have the dual monitor, the theater screen will be on the right.
     // other wise we will show it in a small window
     
-    if  (displayDevices.length > 1) {
+    if  (displayDevices.length > 1 && videoInFullscreen) {
       fullScreen(2);
       dualMonitor = true;
     } else {
@@ -126,7 +126,6 @@ void draw() {
   fill(0, 102, 153);
 
   text(timeInSeconds(), 10, 60);
-
 
   if (token != "") {
     textSize(20);
@@ -211,8 +210,8 @@ boolean waitingFor(int id) {
 void oscEvent(OscMessage theOscMessage) {
   /* parse theOscMessage and extract the values from the osc message arguments. */
   float firstValue;
-  //print("### received an osc message /test with typetag ifs.");
-  //println("### received an osc message with addrpattern "+theOscMessage.addrPattern()+" and typetag "+theOscMessage.typetag());
+  print("### received an osc message /test with typetag ifs.");
+  println("### received an osc message with addrpattern "+theOscMessage.addrPattern()+" and typetag "+theOscMessage.typetag());
   theOscMessage.print();
 
   int scriptId;
@@ -287,8 +286,6 @@ void oscEvent(OscMessage theOscMessage) {
 
       script.addScene(parseInt(sceneId), sceneNumber, parseInt(duration), parseInt(index));
     break;
-
-
   }
 }
 
@@ -313,5 +310,4 @@ void webSocketServerEvent(String msg){
   //   String species = json.getString("address");
   //   println(species);
   // }
-
 }

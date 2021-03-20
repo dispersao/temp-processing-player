@@ -95,7 +95,6 @@ class Script {
         if(playing.hasEnded()){
           lastProgressSent = -1;
           playing.end();
-          //int nextIndex = playing.index +1;
           playing = null;
           play(sequences[nextIndex]);
         }
@@ -182,6 +181,7 @@ class Script {
       if(this.clip != null && this.clip.movie != null){
         return this.clip.movie;
     } else {
+      println("no movie for you!");
       return null;
     }
   }
