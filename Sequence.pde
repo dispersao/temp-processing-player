@@ -29,7 +29,7 @@ class Sequence {
     isPlaying = true;
     
     willEndAt = startedAt + duration() + pausedTime;
-    playingString = sceneNumber+ "("+duration+" sec) \n started:"+round(startedAt/1000)+"\n will end:"+round(willEndAt/1000);
+    playingString = sceneNumber+ " ("+duration+" sec) \n started: "+round(startedAt/1000)+"\n will end: "+round(willEndAt/1000);
     
     sceneState(id, index, "play", progress());
   }
@@ -37,7 +37,7 @@ class Sequence {
   void pause(){
     isPlaying = false;
     pausedAt = timeInMiliseconds();
-    playingString = sceneNumber+ "("+duration+" sec) \n paused at:"+round(pausedAt/1000);
+    playingString = sceneNumber+ " ("+duration+" sec) \n paused at: "+round(pausedAt/1000);
     sceneState(id, index, "pause", progress());
   }
     
@@ -67,5 +67,9 @@ class Sequence {
   
   int duration() {
     return round((duration/speed())*1000);
+  }
+  
+  int remainingMiliseconds() {
+    return this.duration() - this.elapsedMiliseconds();
   }
 }

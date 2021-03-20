@@ -8,10 +8,16 @@ class Script {
   String token;
   String state = "idle";
   
-  int minimalTimePlanned = 80 * 1000 * 1000;
+  Clip clip;
+  
+  int minimalTimePlanned = 10 * 1000;
   
   Script(Integer _id){
     id = _id;
+  }
+  
+  int maxGapUnplanned() {
+    return minimalTimePlanned / speed();
   }
   
   
@@ -55,10 +61,14 @@ class Script {
   
   void play(Sequence s){
     if(s!=null){
+      if( this.clip == null || this.clip.sequence != s){
+        this.clip = new Clip(s);
+      }
       state = "playing";
       isPlaying = true;
       playing = s;
       s.play();
+      this.clip.play();
     }
   }
   
@@ -80,15 +90,17 @@ class Script {
         if(playing.isPassedHalf() ){
           resume += "\n passed half";
         }
-        if(playing.duration() - playing.elapsedMiliseconds() < minimalTimePlanned/speed() && sequences[nextIndex] == null && lastRequestedIndex != nextIndex) {
-           fetchNextSequence(id, playing);
-        }
+        this.shouldFetchSequence();
+        
         if(playing.hasEnded()){
           lastProgressSent = -1;
           playing.end();
-          //int nextIndex = playing.index +1;
           playing = null;
           play(sequences[nextIndex]);
+        }
+        
+        if (sequences[nextIndex] != null){
+          resume += "\n\n next scene " + sequences[nextIndex].sceneNumber;
         }
       } else {
         resume = "paused " + playing.playingString;
@@ -97,11 +109,29 @@ class Script {
     return resume;
   }
   
+  void shouldFetchSequence(){
+    int remainingTime = this.playing.remainingMiliseconds();
+    
+    Sequence lastFetchedSequence = playing;
+    for(int i = playing.index + 1; i < sequences.length; i++){
+      if(sequences[i] != null){
+        lastFetchedSequence = sequences[i];
+        remainingTime += lastFetchedSequence.duration();
+      }
+    }
+    
+    if(remainingTime < maxGapUnplanned() && !waitingFor(lastFetchedSequence.index + 1)){
+      println("remainingTime: "+remainingTime+ " maxGapUnplanned: " +maxGapUnplanned()+ " lastRequestedIndex: "+ lastRequestedIndex);
+      fetchNextSequence(id, lastFetchedSequence);
+    }
+  }
+  
   void pause(){
     if (playing!= null) {
       playing.pause();
       isPlaying = false;
       state = "paused";
+      this.clip.pause();
     }
   }
   
@@ -131,11 +161,28 @@ class Script {
     this.stop();
     sequences = new Sequence[120];
     state = "finished";
+    if(this.clip != null){
+      this.clip.stop();
+    }
+    this.clip = null;
   }
   
   void reset(){
     this.end();
     state = "idle";
     token = "";
+     if(this.clip != null){
+      this.clip.stop();
+    }
+    this.clip = null;
+  }
+  
+    Movie getMovie(){
+      if(this.clip != null && this.clip.movie != null){
+        return this.clip.movie;
+    } else {
+      println("no movie for you!");
+      return null;
+    }
   }
 }
