@@ -51,7 +51,7 @@ class Sequence {
   
   int progress() {
     int passedTime = timeInMiliseconds() - parseInt(startedAt) - pausedTime;
-    return round((passedTime *100)/ duration());
+    return round((passedTime *100)/ max(duration(),1));
   }
   
   int elapsedMiliseconds(){
